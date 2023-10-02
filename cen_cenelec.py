@@ -3,6 +3,7 @@
 
 1/2 документ плагина
 """
+import datetime
 import logging
 import os
 import time
@@ -10,7 +11,7 @@ import time
 from src.spp.types import SPP_document
 
 
-class SOURCE_PARSER_CLASS:
+class CEN_CENELEC:
     """
     Класс парсера плагина SPP
 
@@ -22,7 +23,8 @@ class SOURCE_PARSER_CLASS:
 
     """
 
-    SOURCE_NAME = '<unique source name>'
+    SOURCE_NAME = 'cen&cenelec'
+    HOST = 'https://standards.cencenelec.eu'
     _content_document: list[SPP_document]
 
     def __init__(self, *args, **kwargs):
@@ -59,18 +61,27 @@ class SOURCE_PARSER_CLASS:
         :rtype:
         """
         # HOST - это главная ссылка на источник, по которому будет "бегать" парсер
-        self.logger.debug(F"Parser enter to {HOST}")
+        self.logger.debug(F"Parser enter to {self.HOST}")
 
         # ========================================
         # Тут должен находится блок кода, отвечающий за парсинг конкретного источника
         # -
+        self.find_new_doc(self.HOST, 'Use of LED signal heads in road traffic signal systems', 'This Technical Specification considers only newly manufactured and installed signal controllers and signal heads for road traffic applications, using appropriate cabling. This Technical Specification considers only LED optical units with 200 mm and 300 mm roundels as standardised in EN 12368. It does not consider configurations such as an arrow or a pedestrian symbol, created by specifically positioned patterns of LEDs. This Technical Specification does not consider railway signalling applications.', datetime.datetime.strptime('2007-08-03', '%Y-%m-%d'))
+        self.find_new_doc(self.HOST, 'Road traffic signal systems - Electromagnetic compatibility', 'This product standard for EMC requirements applies to road traffic signal systems. The range of products included within the scope of this European Standard are road traffic signal systems and devices including for example signal heads, signalling devices and traffic signs, controller and housing, supports, interconnections, traffic detectors, monitoring equipment, electrical supply. Road traffic signal systems operating in conjunction with other systems e.g. public lighting, railway systems should also comply with the respective standard and should not reduce the safety of all the equipment. Central Office equipment is excluded from this standard. Items with a radio-communication function should also refer to the European ETSI standards.', datetime.datetime.strptime('2012-06-29', '%Y-%m-%d'))
+        self.find_new_doc(self.HOST, 'Road traffic signal systems', 'This document specifies requirements for Road Traffic Signal Systems, including their development, design, testing, installation and maintenance. In particular, it forms the electrotechnical part of the following two standards issued by CEN: - EN 12368, Traffic control equipment - Signal heads; - EN 12675, Traffic signal controllers - Functional safety requirements. Each of these standards above will be used with this standard either singly or together to define an operational equipment or system. This will be achieved by using the electrotechnical methods and testing defined in this standard. Where Road Traffic Signal Systems are to be used with other systems, e.g. public lighting or railway signalling and communication, this document will be used with any other respective standard(s) for the other associated systems to ensure that overall safety is not compromised. This document is applicable to traffic signal control equipment permanently and temporarily installed, and portable traffic control equipment, with the exception of portable traffic signal equipment only capable of controlling alternate / shuttle working lanes (as further defined in 3.2.10).', datetime.datetime.strptime('2018-09-28', '%Y-%m-%d'))
 
         # Логирование найденного документа
-        self.logger.info(self._find_document_text_for_logger(document))
+        # self.logger.info(self._find_document_text_for_logger(document))
 
         # ---
         # ========================================
         ...
+
+    def find_new_doc(self, host: str, filename: str, abstract: str, date: datetime.datetime = datetime.datetime.now(), delay: float = 0.5):
+        doc = SPP_document(None, filename, abstract, None, f'{host}/ugd/{filename}.pdf', None, {}, date, None)
+        self._content_document.append(doc)
+        self.logger.info(self._find_document_text_for_logger(doc))
+        time.sleep(delay)
 
     @staticmethod
     def _find_document_text_for_logger(doc: SPP_document):
